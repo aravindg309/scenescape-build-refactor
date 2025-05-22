@@ -227,12 +227,13 @@ echo '########################################'
 
 make -C docs clean
 make -C certificates CERTPASS="${CERTPASS}"
+make -C manager/docker
 make -C docker DBPASS="${DBPASS}"
 make -C autocalibration/docker
 make -C controller/docker
 make -C percebro/docker
 
-if sscape/tools/upgrade-database --check ; then
+if manager/tools/upgrade-database --check ; then
     UPGRADEDB=0
 
     while true ; do
@@ -261,7 +262,7 @@ if sscape/tools/upgrade-database --check ; then
     fi
 
     UPGRADE_LOG=/tmp/upgrade.$$.log
-    sscape/tools/upgrade-database 2>&1 | tee ${UPGRADE_LOG}
+    manager/tools/upgrade-database 2>&1 | tee ${UPGRADE_LOG}
     NEW_DB=$(egrep 'Upgraded database .* has been created' ${UPGRADE_LOG} | awk '{print $NF}')
     if [ ! -d "${NEW_DB}/db" -o ! -d "${NEW_DB}/migrations" ] ; then
         echo

@@ -20,7 +20,7 @@ services:
     depends_on:
      - broker
      - pgserver
-    command: pytest --ds=sscape.settings tests/sscape_tests/controller/publish.py
+    command: pytest --ds=manager.settings tests/sscape_tests/controller/publish.py
     privileged: true
     volumes:
      - ./:/workspace

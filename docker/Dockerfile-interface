@@ -53,14 +53,14 @@ RUN : \
     ; rm -rf /tmp/requirements-interface.txt \
     ;
 
-# Install only scene common python module
-ADD scene_common.tar tmp/
-RUN : \
-    ; cd tmp/scene_common \
-    ; pip install --no-cache-dir . \
-    ; cd .. \
-    ; rm -rf scene_common \
-    ;
+# Update to use scene_common from manager image's
+# ADD scene_common.tar tmp/ 
+# RUN : \
+#     ; cd tmp/scene_common \
+#     ; pip install --no-cache-dir . \
+#     ; cd .. \
+#     ; rm -rf scene_common \
+#     ;
 
 # Gecko Driver
 ADD geckodriver.tar.gz /usr/local/bin/

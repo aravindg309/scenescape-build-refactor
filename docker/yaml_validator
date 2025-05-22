@@ -67,7 +67,7 @@ class YAMLValidator:
     return argument_names
 
   def getArgsfromScenescapeInit(self, service):
-    cmd = ["sed", "-n", f"/# {service} options/,/#/p", "docker/scenescape-init"]
+    cmd = ["sed", "-n", f"/# {service} options/,/#/p", "manager/docker/scenescape-init"]
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     stdout, stderr = process.communicate()
 

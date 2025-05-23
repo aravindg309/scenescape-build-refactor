@@ -49,7 +49,7 @@ services:
     restart: on-failure
 
   broker:
-   image: scenescape-broker:1.3.0
+   image: scenescape-broker
    networks:
      scenescape:
        aliases:
@@ -78,7 +78,7 @@ services:
   #   user: "${UID}:${GID}"
 
   pgserver:
-    image: scenescape-manager:1.3.0
+    image: scenescape-manager
     init: true
     networks:
       scenescape:
@@ -107,7 +107,7 @@ services:
     restart: always
 
   web:
-    image: scenescape-manager:1.3.0
+    image: scenescape-manager
     init: true
     networks:
       scenescape:
@@ -147,7 +147,7 @@ services:
     restart: always
 
   scene:
-    image: scenescape-controller:1.3.0
+    image: scenescape-controller
     init: true
     networks:
       scenescape:
@@ -240,7 +240,7 @@ services:
   #       target: certs/scenescape-ca.pem
 
   retail-video:
-    image: scenescape-percebro:1.3.0
+    image: scenescape-percebro
     init: true
     networks:
       scenescape:
@@ -277,7 +277,7 @@ services:
     restart: always
 
   queuing-video:
-    image: scenescape-percebro:1.3.0
+    image: scenescape-percebro
     init: true
     networks:
       scenescape:
@@ -314,7 +314,7 @@ services:
     restart: always
 
   camcalibration:
-    image: scenescape-camcalibration:1.3.0
+    image: scenescape-camcalibration
     init: true
     networks:
       scenescape:

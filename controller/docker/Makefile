@@ -15,7 +15,6 @@ VERSION:=$(shell cat ../version.txt)
 -include Makefile.controllerfiles Makefile.rvfiles
 
 default: Makefile.rvfiles robot_vision.tar Makefile.controllerfiles \
-	controller.tar scene_common.tar Dockerfile
 	env BUILDKIT_PROGRESS=plain \
 	  docker build $(REBUILDFLAGS) \
 	    --build-arg http_proxy=$(http_proxy) \

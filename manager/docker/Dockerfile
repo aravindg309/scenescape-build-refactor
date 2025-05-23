@@ -1,4 +1,4 @@
-FROM ubuntu:22.04 as builder
+FROM scenescape-base AS builder
 
 USER root
 SHELL ["/bin/bash", "-e", "-o", "pipefail", "-c"]
@@ -6,43 +6,6 @@ SHELL ["/bin/bash", "-e", "-o", "pipefail", "-c"]
 ARG CERTDOMAIN=scenescape.intel.com
 
 ENV DEBIAN_FRONTEND=noninteractive
-
-COPY requirements-buildtime.txt /tmp
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        bzip2 \
-        curl \
-        g++ \
-        libboost-python-dev \
-        libegl1 \
-        libeigen3-dev \
-        libgl1 \
-        libglib2.0 \
-        libgtest-dev \
-        make \
-        pybind11-dev \
-        python-is-python3 \
-        python3-dev \
-        python3-pip \
-        python3-scipy \
-    && pip3 install --upgrade --no-cache-dir \
-        --extra-index-url https://download.pytorch.org/whl/cpu \
-        -r /tmp/requirements-buildtime.txt
-
-# Copy and build SceneScape and scene_common
-ADD scene_ui.tar /tmp/
-
-ADD scene_common.tar /tmp/
-RUN : \
-    ; cd tmp/scene_common \
-    ; pip install --no-cache-dir . \
-    ; make -C fast_geometry -j $(nproc) all install \
-    ;
-
-FROM ubuntu:22.04
-
-USER root
-SHELL ["/bin/bash", "-e", "-o", "pipefail", "-c"]
 
 ARG USER_ID
 ARG CERTDOMAIN=scenescape.intel.com
@@ -51,7 +14,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV WSUSER=scenescape
 ENV SCENESCAPE_HOME=/home/$WSUSER/SceneScape
 
-COPY requirements-runtime.txt /tmp
+COPY docker/requirements-runtime.txt /tmp
 
 # Runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -111,8 +74,8 @@ RUN cat > /etc/apache2/mods-available/qos.conf <<EOF
 EOF
 
 #Apache configuration
-COPY 000-default.conf default-ssl.conf /etc/apache2/sites-available/
-COPY apache2.conf /etc/apache2/
+COPY docker/000-default.conf docker/default-ssl.conf /etc/apache2/sites-available/
+COPY docker/apache2.conf /etc/apache2/
 RUN : \
     ; sed -i "s/scenescape.intel.com/$CERTDOMAIN/g" /etc/apache2/sites-available/default-ssl.conf \
     ; chmod og-w /etc/apache2/sites-available/*.conf /etc/apache2/apache2.conf
@@ -122,19 +85,15 @@ RUN useradd -r -m -s /bin/bash $WSUSER && \
     usermod -a -G video,users $WSUSER && \
     chmod a+rX /home/$WSUSER
 
-# Copy python packages & files needed by django
-COPY --from=builder /tmp/django $SCENESCAPE_HOME/manager
-COPY --from=builder /tmp/setup.py $SCENESCAPE_HOME/manager/
-COPY --from=builder /tmp/manage.py $SCENESCAPE_HOME/
-COPY --from=builder /tmp/version.txt $SCENESCAPE_HOME/manager/
-COPY --from=builder /tmp/management $SCENESCAPE_HOME/manager/management
-COPY --from=builder /tmp/static $SCENESCAPE_HOME/manager/static
-COPY --from=builder /tmp/templates $SCENESCAPE_HOME/manager/templates
-COPY --from=builder /tmp/templatetags $SCENESCAPE_HOME/manager/templatetags
-
-# COPY --from=builder /tmp/manage.py $SCENESCAPE_HOME/
-COPY --from=builder /usr/local/lib/python3.10/dist-packages/fast_geometry /usr/local/lib/python3.10/dist-packages/fast_geometry
-COPY --from=builder /usr/local/lib/python3.10/dist-packages/scene_common /usr/local/lib/python3.10/dist-packages/scene_common
+# Copy files needed by django
+COPY django $SCENESCAPE_HOME/manager
+COPY setup.py $SCENESCAPE_HOME/manager/
+COPY django/manage.py $SCENESCAPE_HOME/
+COPY version.txt $SCENESCAPE_HOME/manager/
+COPY management $SCENESCAPE_HOME/manager/management
+COPY static $SCENESCAPE_HOME/manager/static
+COPY templates $SCENESCAPE_HOME/manager/templates
+COPY templatetags $SCENESCAPE_HOME/manager/templatetags
 
 #Install SceneScape
 RUN : \
@@ -155,6 +114,6 @@ RUN chmod -R u=rwX,go=rX $SCENESCAPE_HOME/manager/static/examples/ && \
     sed -i "s|sha256-opencv|sha256-$OPENCV_SHA|g" /etc/apache2/sites-available/000-default.conf
 
 # Copy init scripts
-COPY scenescape-init database-init webserver-init /usr/local/bin/
+COPY docker/scenescape-init docker/database-init docker/webserver-init /usr/local/bin/
 
 ENTRYPOINT ["/usr/local/bin/scenescape-init"]

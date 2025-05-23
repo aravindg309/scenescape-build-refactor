@@ -62,7 +62,7 @@ scene_common:
 	ln -sf ../scene_common ../autocalibration
 	ln -sf ../scene_common ../controller
 	ln -sf ../scene_common ../percebro
-	ln -sf ../scene_common ../manager
+	ln -sf ../scene_common ../manager/docker
 	mkdir -p ../controller/utils && ln -sf ../../utils/waitforbroker ../controller/utils/waitforbroker
 	mkdir -p ../percebro/utils && ln -sf ../../utils/waitforbroker ../percebro/utils/waitforbroker
 

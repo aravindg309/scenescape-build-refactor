@@ -40,6 +40,17 @@ secrets:
 #       device: tmpfs
 
 services:
+  scenescape-base:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile-base
+      args:
+        http_proxy: http://proxy-dmz.intel.com:912
+        https_proxy: http://proxy-dmz.intel.com:912
+        no_proxy: intel.com,.intel.com,10.0.0.0/8,192.168.0.0/16,localhost,.local,127.0.0.0/8,172.16.0.0/12,134.134.0.0/16
+        CERTDOMAIN: ""
+    image: scenescape-base
+
   ntpserv:
     image: dockurr/chrony
     networks:
@@ -78,12 +89,20 @@ services:
   #   user: "${UID}:${GID}"
 
   pgserver:
-    image: scenescape-manager:1.3.0
+    build:
+      context: ./manager
+      dockerfile: ./docker/Dockerfile
+      args:
+        http_proxy: http://proxy-dmz.intel.com:912
+        https_proxy: http://proxy-dmz.intel.com:912
+        no_proxy: intel.com,.intel.com,10.0.0.0/8,192.168.0.0/16,localhost,.local,127.0.0.0/8,172.16.0.0/12,134.134.0.0/16
+        CERTDOMAIN: ""
+        USER_ID: "1013"
     init: true
     networks:
       scenescape:
     environment:
-     - "SUPASS"
+     - "SUPASS=admin123"
      - "DBROOT"
     command: database --preloadexample
     cap_add:
@@ -107,8 +126,15 @@ services:
     restart: always
 
   web:
-    image: scenescape-manager:1.3.0
-    init: true
+    build:
+      context: ./manager
+      dockerfile: ./docker/Dockerfile
+      args:
+        http_proxy: http://proxy-dmz.intel.com:912
+        https_proxy: http://proxy-dmz.intel.com:912
+        no_proxy: intel.com,.intel.com,10.0.0.0/8,192.168.0.0/16,localhost,.local,127.0.0.0/8,172.16.0.0/12,134.134.0.0/16
+        CERTDOMAIN: ""
+        USER_ID: "1013"
     networks:
       scenescape:
         aliases:

@@ -88,6 +88,7 @@ gen-extrafiles:
 
 FPUIFILES= $(addprefix ../,$(UIFILES))
 scene_ui.tar: Makefile.uifiles $(FPUIFILES)
+	@echo $(EXTRA_UIFILES)
 	tar -chf $@ $(FPUIFILES) $(EXTRA_UIFILES)
 
 scene_common.tar:

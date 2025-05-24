@@ -13,7 +13,8 @@ SHELL=/bin/bash
 .SHELLFLAGS=-o pipefail -c
 IMAGE=scenescape
 IMAGE_INTERFACE=$(IMAGE)-interface
-VERSION:=$(shell cat ../sscape/version.txt)
+BASE_IMAGE=$(IMAGE)-manager
+VERSION:=$(shell cat ../manager/version.txt)
 
 TEST_DATA=test_data
 TESTS_DIRECTORY=tests
@@ -57,7 +58,7 @@ define selenium-recipe =
 	        EXAMPLEDB=$4 \
 	  ; fi \
 	  ; echo $(EXAMPLEDB) \
-	  ; env IMAGE=$(IMAGE):$(VERSION) BROWSER_IMAGE=$(IMAGE_INTERFACE):$(VERSION) \
+	  ; env IMAGE=$(BASE_IMAGE):$(VERSION) BROWSER_IMAGE=$(IMAGE_INTERFACE):$(VERSION) \
 	      DBROOT=$(DBROOT) EXAMPLEDB=$${EXAMPLEDB} LOG=$(LOGFILE) LOGSFORCONTAINER="scene" \
 	      TEST_SCRIPT=$(TEST_SCRIPT) \
 	      WAITFORCONTAINERS=$(CONTAINERS) \
@@ -91,7 +92,7 @@ define common-recipe =
 	        EXAMPLEDB=$6 \
 	  ; fi \
 	  ; mkdir -p $(shell dirname $(LOGFILE)) \
-	  ; env IMAGE=$(IMAGE):$(VERSION) BROWSER_IMAGE=$(IMAGE_INTERFACE):$(VERSION) \
+	  ; env IMAGE=$(BASE_IMAGE):$(VERSION) BROWSER_IMAGE=$(IMAGE_INTERFACE):$(VERSION) \
 	      DBROOT=$(DBROOT) EXAMPLEDB=$${EXAMPLEDB} LOGSFORCONTAINER=$(CONTAINERS) \
 	      WAITFORCONTAINERS=$(CONTAINERS) \
 	      NO_PROXY=$(NO_PROXY),.scenescape.intel.com,.scenescape \
@@ -337,7 +338,7 @@ malformed-json:
 	@set -ex \
 	  ; echo RUNNING TEST $@ \
 	  ; cd .. \
-	  ; env IMAGE=$(IMAGE):$(VERSION) BROWSER_IMAGE=$(IMAGE)-interface:$(VERSION) WAITFORCONTAINERS="pgserver scene" tests/security/malformed_data/test_malformed_json.sh 2>&1 | tee -i $(LOGFILE) \
+	  ; env IMAGE=$(BASE_IMAGE):$(VERSION) BROWSER_IMAGE=$(IMAGE)-interface:$(VERSION) WAITFORCONTAINERS="pgserver scene" tests/security/malformed_data/test_malformed_json.sh 2>&1 | tee -i $(LOGFILE) \
 	  ; echo "MAKE_TARGET: $@" | tee -ia $(LOGFILE) \
 	  ; echo END TEST $@
 
@@ -399,9 +400,9 @@ persistence: # SAIL-T454
 	  ; echo RUNNING TEST $@ \
 	  ; cd .. \
 	  ; EXAMPLEDB=$(EXAMPLEDB) \
-	  ; env IMAGE=$(IMAGE):$(VERSION) BROWSER_IMAGE=$(IMAGE)-interface:$(VERSION) DBROOT=$(DBROOT) EXAMPLEDB=$${EXAMPLEDB} $(RUNTEST) $(COMPOSE)/broker.yml:$(COMPOSE)/pgserver.yml:$(COMPOSE)/web.yml $(SELENIUM_TEST_COVERAGE_CMD) --data-file=$(SELENIUM_COVERAGE_DATA_FILE) pytest -s $(GENERATE_JUNITXML) tests/ui/tc_persistence_on_page_navigate.py --password=$(SUPASS) 2>&1 | tee -i $(LOGFILE_NAVIGATE) \
+	  ; env IMAGE=$(BASE_IMAGE):$(VERSION) BROWSER_IMAGE=$(IMAGE)-interface:$(VERSION) DBROOT=$(DBROOT) EXAMPLEDB=$${EXAMPLEDB} $(RUNTEST) $(COMPOSE)/broker.yml:$(COMPOSE)/pgserver.yml:$(COMPOSE)/web.yml $(SELENIUM_TEST_COVERAGE_CMD) --data-file=$(SELENIUM_COVERAGE_DATA_FILE) pytest -s $(GENERATE_JUNITXML) tests/ui/tc_persistence_on_page_navigate.py --password=$(SUPASS) 2>&1 | tee -i $(LOGFILE_NAVIGATE) \
 	  ; echo "MAKE_TARGET: $@" | tee -ia $(LOGFILE_NAVIGATE) \
-	  ; env IMAGE=$(IMAGE):$(VERSION) BROWSER_IMAGE=$(IMAGE)-interface:$(VERSION) DBROOT=$(DBROOT) KEEP_DB=1 EXAMPLEDB=$${EXAMPLEDB} $(RUNTEST) $(COMPOSE)/broker.yml:$(COMPOSE)/pgserver.yml:$(COMPOSE)/web.yml $(SELENIUM_TEST_COVERAGE_CMD) --data-file=$(SELENIUM_COVERAGE_DATA_FILE) pytest -s $(GENERATE_JUNITXML) tests/ui/tc_persistence_on_restart.py --password=$(SUPASS) 2>&1 | tee -i $(LOGFILE_RESTART) \
+	  ; env IMAGE=$(BASE_IMAGE):$(VERSION) BROWSER_IMAGE=$(IMAGE)-interface:$(VERSION) DBROOT=$(DBROOT) KEEP_DB=1 EXAMPLEDB=$${EXAMPLEDB} $(RUNTEST) $(COMPOSE)/broker.yml:$(COMPOSE)/pgserver.yml:$(COMPOSE)/web.yml $(SELENIUM_TEST_COVERAGE_CMD) --data-file=$(SELENIUM_COVERAGE_DATA_FILE) pytest -s $(GENERATE_JUNITXML) tests/ui/tc_persistence_on_restart.py --password=$(SUPASS) 2>&1 | tee -i $(LOGFILE_RESTART) \
 	  ; echo "MAKE_TARGET: $@" | tee -ia $(LOGFILE_RESTART) \
 	  ; echo END TEST $@
 

@@ -54,7 +54,7 @@ RUN : \
     ;
 
 # Update to use scene_common from manager image's
-# ADD scene_common.tar tmp/ 
+# ADD scene_common.tar tmp/
 # RUN : \
 #     ; cd tmp/scene_common \
 #     ; pip install --no-cache-dir . \

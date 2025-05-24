@@ -13,7 +13,7 @@ SHELL=/bin/bash
 IMAGE=scenescape-manager
 VERSION:=$(shell cat ../version.txt)
 CERTDOMAIN=scenescape.intel.com
-DBDIR=../../db 
+DBDIR=../../db
 MIGRATIONSDIR=../../migrations
 MEDIADIR=../../media
 DATASETS=../../datasets
@@ -85,6 +85,14 @@ EXTRA_UIFILES := $(shell find $(ASSET_DIRS) -type f)
 
 gen-extrafiles:
 	@find $(ASSET_DIRS) -type f > /dev/null
+
+Makefile.uifiles:
+	echo 'define UIFILES' > $@
+	( IFS="$$(printf '\n+')" \
+	  ; git ls-tree --full-tree -r --name-only --full-name HEAD manager \
+	) | grep -Ev '/(tools|docker)/' | sed 's|^manager/||' | sort \
+	| sed -e 's/$$/ \\/ ; $$s/ .$$//' >> $@
+	echo endef >> $@
 
 FPUIFILES= $(addprefix ../,$(UIFILES))
 scene_ui.tar: Makefile.uifiles $(FPUIFILES)

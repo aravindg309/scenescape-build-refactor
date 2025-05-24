@@ -97,7 +97,6 @@ services:
      - ./migrations:/workspace/migrations
      - ./media:/workspace/media
      - ./sample_data:/home/scenescape/SceneScape/sample_data
-     - ./manager/docker/user_access_config.json:/home/scenescape/SceneScape/user_access_config.json
     secrets:
      - django
      - controller.auth

@@ -152,6 +152,8 @@ RUN chmod -R u=rwX,go=rX "$SCENESCAPE_HOME/manager/static/examples/" && \
     OPENCV_SHA=$(openssl dgst -sha256 -binary "$SCENESCAPE_HOME/manager/static/assets/opencv.js" | openssl base64) && \
     sed -i "s|sha256-opencv|sha256-${OPENCV_SHA}|g" /etc/apache2/sites-available/000-default.conf
 
+COPY user_access_config.json $SCENESCAPE_HOME
+
 # Install scene common
 ADD scene_common.tar tmp/
 RUN : \

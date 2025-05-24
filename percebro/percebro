@@ -115,12 +115,12 @@ def build_argparser():
   return parser
 
 def _json_default(obj):
-    if isinstance(obj, np.generic):
-        return obj.item()
-    if isinstance(obj, np.ndarray):
-        return obj.tolist()
-    raise TypeError(f"Object of type {obj.__class__.__name__} is not JSON serializable")
-  
+  if isinstance(obj, np.generic):
+    return obj.item()
+  if isinstance(obj, np.ndarray):
+    return obj.tolist()
+  raise TypeError(f"Object of type {obj.__class__.__name__} is not JSON serializable")
+
 def mqttDidConnect(client, userdata, flags, rc):
   global cams
 

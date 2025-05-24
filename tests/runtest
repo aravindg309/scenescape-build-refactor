@@ -11,7 +11,7 @@
 # This software and the related documents are provided as is, with no express
 # or implied warranties, other than those that are expressly stated in the License.
 
-IMAGE=${IMAGE:-scenescape}
+IMAGE=${IMAGE:-scenescape-manager}
 BROWSER_IMAGE=${BROWSER_IMAGE:-scenescape-interface}
 PROJECT=test$$
 COMPOSE_FILES=$(echo $1 | sed -e 's/:/ /g')
@@ -41,11 +41,13 @@ for COMPOSE in ${COMPOSE_FILES} ; do
 
     IMAGE_BASE=${IMAGE%%:*}
     IMAGE_VERS=${IMAGE#*:}
+    echo "DKA"
+    echo ${IMAGE_BASE}
     if [ -n "${IMAGE_VERS}" ] ; then
         IMAGE_VERS=":${IMAGE_VERS}"
     fi
     sed \
-        -e "s/image: scenescape\(-.*\)\?/image: ${IMAGE_BASE}\1${IMAGE_VERS}/" \
+        -e "s|^image: scenescape\( *\|:[^ ]*\)*$|image: ${IMAGE_BASE}${IMAGE_VERS}|" \
         -e "s/${NETWORK}\(:\?\)$/${NETWORK}_${PROJECT}\1/" \
         -e "/ports:$/,/:$/{/ports/d;/[0-9]:[0-9]/d}" \
         ${COMPOSE} > ${CTMP}
@@ -84,7 +86,7 @@ if [ -n "$WAITFORCONTAINERS" ]; then
 fi
 
 if [ "${RUN_TEST}" = 1 ] ; then
-    docker/scenescape-start --image ${BROWSER_IMAGE} --network ${PROJECT}_${NETWORK} $@
+    docker/scenescape-start --image ${IMAGE} --network ${PROJECT}_${NETWORK} $@
     STATUS=$?
 else
     STATUS=3

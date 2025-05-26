@@ -11,7 +11,6 @@
 # This software and the related documents are provided as is, with no express
 # or implied warranties, other than those that are expressly stated in the License.
 
-IMAGE=${IMAGE:-scenescape-manager}
 BROWSER_IMAGE=${BROWSER_IMAGE:-scenescape-interface}
 PROJECT=test$$
 COMPOSE_FILES=$(echo $1 | sed -e 's/:/ /g')
@@ -41,8 +40,6 @@ for COMPOSE in ${COMPOSE_FILES} ; do
 
     IMAGE_BASE=${IMAGE%%:*}
     IMAGE_VERS=${IMAGE#*:}
-    echo "DKA"
-    echo ${IMAGE_BASE}
     if [ -n "${IMAGE_VERS}" ] ; then
         IMAGE_VERS=":${IMAGE_VERS}"
     fi

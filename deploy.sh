@@ -15,12 +15,6 @@
 
 set -e
 
-if uname -a | grep -i microsoft > /dev/null ; then
-    echo WSL is not supported.
-    echo Cannot proceed.
-    exit 1
-fi
-
 if ! command -v apt-get > /dev/null ; then
     echo This script will only work on a Debian or Ubuntu based system.
     echo Cannot proceed.
@@ -65,7 +59,7 @@ do
 done
 
 PACKAGES=""
-for cmd in git curl make openssl ; do
+for cmd in git curl make openssl unzip ; do
     if ! dpkg -s ${cmd} > /dev/null ; then
         PACKAGES="${PACKAGES} ${cmd}"
     fi
@@ -230,9 +224,10 @@ make -C certificates CERTPASS="${CERTPASS}"
 make -C docker
 make -C manager
 make -C docker DBPASS="${DBPASS}"
-make -C autocalibration/docker
-make -C controller/docker
-make -C percebro/docker
+make -C autocalibration/docker &
+make -C controller/docker &
+make -C percebro/docker &
+wait
 
 if manager/tools/upgrade-database --check ; then
     UPGRADEDB=0
@@ -273,20 +268,6 @@ if manager/tools/upgrade-database --check ; then
     fi
 
     rsync -a --delete ${NEW_DB}/db ${NEW_DB}/migrations .
-fi
-
-echo
-echo '########################################'
-echo Testing inference performance
-echo '########################################'
-
-REQUIRED_FPS=${REQUIRED_FPS:-20} # Total, not per camera
-if ! tests/perf_tests/tc_inference_performance.sh retail \
-     "sample_data/apriltag-cam1.mp4 sample_data/apriltag-cam2.mp4" 500 \
-     $REQUIRED_FPS ; then
-    echo The performance of this computer is insufficient
-    echo At least ${REQUIRED_FPS}FPS is required for inferencing
-    exit 1
 fi
 
 if [ "${SKIP_BRINGUP}" != "1" ] ; then

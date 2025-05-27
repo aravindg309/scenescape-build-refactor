@@ -172,8 +172,8 @@ def publishObjects(all_objects, ts, mac_addr, mqttid, client, rate,
          'frame_rate': frame_rate
         }
   client.publish(
-      PubSub.formatTopic(PubSub.DATA_CAMERA, camera_id=mqttid),
-      json.dumps(pub, default=_json_default)
+    PubSub.formatTopic(PubSub.DATA_CAMERA, camera_id=mqttid),
+    json.dumps(pub, default=_json_default)
   )
   return
 

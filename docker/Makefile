@@ -20,17 +20,15 @@ CURL_FLAGS=--connect-timeout 5 --max-time 120 --retry 5 --retry-delay 0
 FORCE_VAAPI ?= 0
 THREEJS_VERSION=168
 
--include Makefile.scenecommonfiles
-
 default: interface broker model-installer-img scene_common secrets install-models
 
-interface: Dockerfile-interface firefox-profile.tar geckodriver.tar.gz scene_common.tar
+interface: Dockerfile-interface firefox-profile.tar geckodriver.tar.gz
 	env BUILDKIT_PROGRESS=plain \
 	  docker build $(REBUILDFLAGS) -f $< \
 	    --build-arg http_proxy=$(http_proxy) \
 	    --build-arg https_proxy=$(https_proxy) \
 	    --build-arg no_proxy=$(no_proxy) \
-	    --rm -t $(IMAGE)-interface:$(VERSION) . \
+	    --rm -t $(IMAGE)-interface:$(VERSION) .. -f ./Dockerfile-interface \
 	&& docker tag $(IMAGE)-interface:$(VERSION) $(IMAGE)-interface:latest
 
 broker: Dockerfile-broker
@@ -39,7 +37,7 @@ broker: Dockerfile-broker
 	    --build-arg http_proxy=$(http_proxy) \
 	    --build-arg https_proxy=$(https_proxy) \
 	    --build-arg no_proxy=$(no_proxy) \
-	    --rm -t $(IMAGE)-broker:$(VERSION) . \
+	    --rm -t $(IMAGE)-broker:$(VERSION) .. -f ./Dockerfile-broker \
 	&& docker tag $(IMAGE)-broker:$(VERSION) $(IMAGE)-broker:latest
 
 model-installer-img: Dockerfile-model-installer
@@ -48,7 +46,7 @@ model-installer-img: Dockerfile-model-installer
 	    --build-arg http_proxy=$(http_proxy) \
 	    --build-arg https_proxy=$(https_proxy) \
 	    --build-arg no_proxy=$(no_proxy) \
-	    --rm -t $(IMAGE)-model-installer:$(VERSION) . \
+	    --rm -t $(IMAGE)-model-installer:$(VERSION) .. -f ./Dockerfile-model-installer \
 	  && docker tag $(IMAGE)-model-installer:$(VERSION) $(IMAGE)-model-installer:latest
 
 sources: Dockerfile-sources
@@ -57,14 +55,13 @@ sources: Dockerfile-sources
 	    --build-arg http_proxy=$(http_proxy) \
 	    --build-arg https_proxy=$(https_proxy) \
 	    --build-arg no_proxy=$(no_proxy) \
-	    --rm -t $(IMAGE)-sources:$(VERSION) . \
+	    --rm -t $(IMAGE)-sources:$(VERSION) .. -f ./Dockerfile-sources \
 	&& docker tag $(IMAGE)-sources:$(VERSION) $(IMAGE)-sources:latest
 
 scene_common:
 	ln -sf ../scene_common ../autocalibration
 	ln -sf ../scene_common ../controller
 	ln -sf ../scene_common ../percebro
-	ln -sf ../scene_common ../manager
 	mkdir -p ../controller/utils && ln -sf ../../utils/waitforbroker ../controller/utils/waitforbroker
 	mkdir -p ../percebro/utils && ln -sf ../../utils/waitforbroker ../percebro/utils/waitforbroker
 

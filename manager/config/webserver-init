@@ -22,6 +22,9 @@ mkdir -p ${MANAGERDIR}/media
 chown www-data.www-data ${MANAGERDIR}/media
 chmod ug+rwx ${MANAGERDIR}/media
 map_dir ${DBROOT}/media ${MANAGERDIR}/media www-data www-data
+if [ ! -d ${MANAGERDIR}/media ] || [ -z "$(ls -A ${MANAGERDIR}/media)" ]; then
+  map_dir /workspace/media ${MANAGERDIR}/media www-data www-data
+fi
 # Remove symlink and make a copy owned by www-data
 rm -f ${MANAGERDIR}/manager/secrets.py
 cp ${RUNSECRETS}/django/secrets.py ${MANAGERDIR}/manager/secrets.py

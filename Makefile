@@ -20,10 +20,10 @@ check-tag:
 ifeq ($(BUILD_TYPE),TAG)
 	@echo "Checking if tag matches sscape/version.txt..."
 	@if grep --quiet $(BRANCH_NAME) sscape/version.txt; then \
-		echo "Perfect - Tag and Version is matching"; \
+	echo "Perfect - Tag and Version is matching"; \
 	else \
-		echo "There is some mismatch between Tag and Version"; \
-		exit 1; \
+	echo "There is some mismatch between Tag and Version"; \
+	exit 1; \
 	fi
 endif
 
@@ -34,5 +34,5 @@ build-certificates:
 .PHONY: build-docker
 build-docker:
 	for dir in $(SUB_FOLDERS); do \
-		$(MAKE) http_proxy=$(http_proxy) -C $$dir $(EXTRA_BUILD_FLAGS); \
+	$(MAKE) http_proxy=$(http_proxy) -C $$dir $(EXTRA_BUILD_FLAGS); \
 	done

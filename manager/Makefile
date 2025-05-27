@@ -11,14 +11,14 @@
 
 SHELL=/bin/bash
 IMAGE=scenescape-manager
-VERSION:=$(shell cat ../version.txt)
+VERSION:=$(shell cat ./version.txt)
 CERTDOMAIN=scenescape.intel.com
-DBDIR=../../db
-MIGRATIONSDIR=../../migrations
-MEDIADIR=../../media
-DATASETS=../../datasets
-USERVIDEODIR=../../videos
-JSLIBDIR=../static
+DBDIR=../db
+MIGRATIONSDIR=../migrations
+MEDIADIR=../media
+DATASETS=../datasets
+USERVIDEODIR=../videos
+JSLIBDIR=static
 CURL_FLAGS=--connect-timeout 5 --max-time 120 --retry 5 --retry-delay 0
 FORCE_VAAPI ?= 0
 THREEJS_VERSION=168
@@ -28,10 +28,10 @@ define axios-asset-recipe =
 	  && curl -f $(CURL_FLAGS) --location --create-dirs --output $@ $${URL}/$${PKG}
 endef
 
--include Makefile.uifiles Makefile.editorfiles Makefile.jsmexamples Makefile.scenecommonfiles
+-include Makefile.jsmexamples
 
-default: Makefile.uifiles jslibraries jsm-examples gen-extrafiles scene_common.tar scene_ui.tar Dockerfile \
-	scenescape-init database-dirs user-dirs
+default: jslibraries jsm-examples Dockerfile \
+	database-dirs user-dirs
 	env BUILDKIT_PROGRESS=plain \
 	  docker build $(REBUILDFLAGS) \
 	    --build-arg http_proxy=$(http_proxy) \
@@ -40,7 +40,7 @@ default: Makefile.uifiles jslibraries jsm-examples gen-extrafiles scene_common.t
 	    --build-arg CERTDOMAIN=$(CERTDOMAIN) \
 	    --build-arg USER_ID=$$UID \
 	    --build-arg FORCE_VAAPI=$(FORCE_VAAPI) \
-	    --rm -t $(IMAGE):$(VERSION) . \
+	    --rm -t $(IMAGE):$(VERSION) .. -f ./Dockerfile \
 	&& docker tag $(IMAGE):$(VERSION) $(IMAGE):latest
 
 $(DBDIR):
@@ -78,29 +78,6 @@ $(JSMEXAMPLES):
 	  && sed -i -e "s,'three','/static/assets/three.module.js'," $(JSLIBDIR)/examples/$@; \
 	fi
 
-ASSET_DIRS := ../static/assets ../static/examples ../static/bootstrap
-EXTRA_UIFILES := $(shell find $(ASSET_DIRS) -type f)
-
-.PHONY: gen-extrafiles
-
-gen-extrafiles:
-	@find $(ASSET_DIRS) -type f > /dev/null
-
-Makefile.uifiles:
-	echo 'define UIFILES' > $@
-	( IFS="$$(printf '\n+')" \
-	  ; git ls-tree --full-tree -r --name-only --full-name HEAD manager \
-	) | grep -Ev '/(tools|docker)/' | sed 's|^manager/||' | sort \
-	| sed -e 's/$$/ \\/ ; $$s/ .$$//' >> $@
-	echo endef >> $@
-
-FPUIFILES= $(addprefix ../,$(UIFILES))
-scene_ui.tar: Makefile.uifiles $(FPUIFILES)
-	@echo $(EXTRA_UIFILES)
-	tar -chf $@ $(FPUIFILES) $(EXTRA_UIFILES)
-
-scene_common.tar:
-	tar -chf $@ ../scene_common
 
 # Download Javascript libraries
 jslibraries: \

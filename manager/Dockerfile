@@ -26,7 +26,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ARG FORCE_VAAPI
 
 # SceneScape requirements
-COPY requirements-dockerfile.txt /tmp
+COPY ./manager/requirements.txt /tmp
 RUN : \
     ; apt-get update \
     ; apt-get install -y --no-install-recommends \
@@ -54,8 +54,8 @@ RUN : \
     ; rm -rf /var/lib/apt/lists/* \
     ; pip3 install --upgrade --no-cache-dir \
         --extra-index-url https://download.pytorch.org/whl/cpu \
-        -r /tmp/requirements-dockerfile.txt \
-    ; rm -rf /tmp/requirements-dockerfile.txt \
+        -r /tmp/requirements.txt \
+    ; rm -rf /tmp/requirements.txt \
     ;
 
 ENV WSUSER=scenescape
@@ -121,24 +121,23 @@ ENV SCENESCAPE_HOME=/home/$WSUSER/SceneScape
 # Suppress warning about consecutive RUN instructions here
 # hadolint ignore=DL3059
 RUN cp -R /usr/local/lib/python3.*/dist-packages/django/contrib/admin/static/ $SCENESCAPE_HOME/
-COPY 000-default.conf default-ssl.conf /etc/apache2/sites-available/
-COPY apache2.conf /etc/apache2/
+COPY ./manager/config/000-default.conf ./manager/config/default-ssl.conf /etc/apache2/sites-available/
+COPY ./manager/config/apache2.conf /etc/apache2/
 RUN : \
     ; sed -i "s/scenescape.intel.com/$CERTDOMAIN/g" /etc/apache2/sites-available/default-ssl.conf \
     ; chmod og-w /etc/apache2/sites-available/*.conf /etc/apache2/apache2.conf
 
 # End of TLS installation
 
-ADD scene_ui.tar /temp/
 RUN mkdir -p $SCENESCAPE_HOME/manager
-RUN mv temp/setup.py $SCENESCAPE_HOME/manager/
-RUN mv temp/django/* $SCENESCAPE_HOME/manager/
-RUN mv temp/management/ $SCENESCAPE_HOME/manager/
-RUN mv temp/templates/ $SCENESCAPE_HOME/manager/
-RUN mv temp/static/ $SCENESCAPE_HOME/manager/
-RUN mv temp/templatetags/ $SCENESCAPE_HOME/manager/
-RUN mv temp/version.txt $SCENESCAPE_HOME/manager/
-RUN mv temp/manage.py $SCENESCAPE_HOME
+COPY ./manager/setup.py $SCENESCAPE_HOME/manager/
+COPY ./manager/django/* $SCENESCAPE_HOME/manager/
+COPY ./manager/management/ $SCENESCAPE_HOME/manager/management
+COPY ./manager/templates/ $SCENESCAPE_HOME/manager/templates
+COPY ./manager/static/ $SCENESCAPE_HOME/manager/static
+COPY ./manager/templatetags/ $SCENESCAPE_HOME/manager/templatetags
+COPY ./manager/version.txt $SCENESCAPE_HOME/manager/
+COPY ./manager/manage.py $SCENESCAPE_HOME
 
 RUN : \
     ; eval WSHOME=~$WSUSER \
@@ -148,30 +147,31 @@ RUN : \
     ; pip3 install --no-cache-dir "$SCENESCAPE_HOME/manager/" \
     ;
 
+RUN chmod -R u=rwX,go=rX $SCENESCAPE_HOME/manager/static/assets/
+RUN chmod -R u=rwX,go=rX $SCENESCAPE_HOME/manager/static/examples/
+RUN chmod -R u=rwX,go=rX $SCENESCAPE_HOME/manager/static/bootstrap/
+
 RUN chmod -R u=rwX,go=rX "$SCENESCAPE_HOME/manager/static/examples/" && \
     OPENCV_SHA=$(openssl dgst -sha256 -binary "$SCENESCAPE_HOME/manager/static/assets/opencv.js" | openssl base64) && \
     sed -i "s|sha256-opencv|sha256-${OPENCV_SHA}|g" /etc/apache2/sites-available/000-default.conf
 
-COPY user_access_config.json $SCENESCAPE_HOME
+COPY ./manager/config/user_access_config.json $SCENESCAPE_HOME
 
-# Install scene common
-ADD scene_common.tar tmp/
-RUN : \
-    ; cd tmp/scene_common \
-    ; pip install --no-cache-dir . \
-    ; make -C fast_geometry -j $(nproc) all install \
-    ; cd .. \
-    ; rm -rf scene_common \
-    ;
+COPY ./scene_common tmp/scene_common
+RUN cd tmp/scene_common \
+    && pip install --no-cache-dir . \
+    && make -C fast_geometry -j $(nproc) all install \
+    && cd .. \
+    && rm -rf scene_common
 
 RUN : \
     ; apt-get purge -y --auto-remove make g++ \
     ; apt-get clean \
     ;
 
-COPY scenescape-init \
-     database-init \
-     webserver-init \
+COPY ./manager/config/webserver-init \
+     ./manager/config/database-init \
+     ./manager/config/scenescape-init \
      /usr/local/bin/
 
 ENTRYPOINT ["/usr/local/bin/scenescape-init"]

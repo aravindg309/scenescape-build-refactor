@@ -20,7 +20,7 @@ CURL_FLAGS=--connect-timeout 5 --max-time 120 --retry 5 --retry-delay 0
 FORCE_VAAPI ?= 0
 THREEJS_VERSION=168
 
-default: interface broker model-installer-img scene_common secrets install-models
+default: broker model-installer-img install-models secrets scene_common
 
 interface: Dockerfile-interface firefox-profile.tar geckodriver.tar.gz
 	env BUILDKIT_PROGRESS=plain \
@@ -112,10 +112,6 @@ geckodriver.tar.gz:
 	  ;
 
 django-secrets: $(SECRETSDIR)/django/secrets.py
-
-FPSCENECOMMON=$(addprefix ../,$(SCENECOMMONFILES))
-scene_common.tar:  Makefile.scenecommonfiles $(FPSCENECOMMON)
-	tar -cf $@ -C .. $(SCENECOMMONFILES)
 
 $(SECRETSDIR)/django/secrets.py:
 	mkdir -p $(SECRETSDIR)/django

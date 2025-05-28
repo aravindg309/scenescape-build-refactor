@@ -23,12 +23,39 @@ CURL_FLAGS=--connect-timeout 5 --max-time 120 --retry 5 --retry-delay 0
 FORCE_VAAPI ?= 0
 THREEJS_VERSION=168
 
+define JSMEXAMPLES
+fonts/helvetiker_regular.typeface.json \
+jsm/controls/OrbitControls.js \
+jsm/controls/TransformControls.js \
+jsm/environments/RoomEnvironment.js \
+jsm/webxr/XRControllerModelFactory.js \
+jsm/geometries/TextGeometry.js \
+jsm/helpers/VertexNormalsHelper.js \
+jsm/helpers/ViewHelper.js \
+jsm/interactive/HTMLMesh.js \
+jsm/interactive/InteractiveGroup.js \
+jsm/libs/draco/draco_encoder.js \
+jsm/libs/fflate.module.js \
+jsm/libs/ktx-parse.module.js \
+jsm/libs/mikktspace.module.js \
+jsm/libs/motion-controllers.module.js \
+jsm/libs/lil-gui.module.min.js \
+jsm/libs/stats.module.js \
+jsm/libs/zstddec.module.js \
+jsm/loaders/GLTFLoader.js \
+jsm/loaders/FontLoader.js \
+jsm/utils/BufferGeometryUtils.js \
+jsm/utils/SkeletonUtils.js \
+jsm/utils/WorkerPool.js \
+jsm/webxr/VRButton.js
+endef
+
+JSMEXAMPLES := $(value JSMEXAMPLES)
+
 define axios-asset-recipe =
 	URL=https://cdn.jsdelivr.net/npm/axios/dist && PKG=$$(basename $@) \
 	  && curl -f $(CURL_FLAGS) --location --create-dirs --output $@ $${URL}/$${PKG}
 endef
-
--include Makefile.jsmexamples
 
 default: jslibraries jsm-examples Dockerfile \
 	database-dirs user-dirs
@@ -63,12 +90,6 @@ user-dirs: $(USERVIDEODIR)
 jsm-examples: $(JSMEXAMPLES)
 
 database-dirs: $(DBDIR) $(MIGRATIONSDIR) $(MEDIADIR) $(DATASETS)
-
-$(EDITORFILES):
-	if [ ! -f $@ ] ; then \
-	  curl -f $(CURL_FLAGS) --location --create-dirs --output $@ \
-	  https://raw.githubusercontent.com/mrdoob/three.js/r$(THREEJS_VERSION)/$@; \
-	fi
 
 $(JSMEXAMPLES):
 	$(eval RELPATH=$@)

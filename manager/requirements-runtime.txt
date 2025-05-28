@@ -1,9 +1,6 @@
-
 # Keep package list in alphabetical order
-coverage
 django
 django-axes
-django-debug-toolbar
 django-session-timeout
 djangorestframework
 jsonschema
@@ -15,11 +12,9 @@ opencv-python
 paho-mqtt
 pillow
 psycopg2-binary
-pybind11
-pytest
-pytest-django
 pyyaml
 trimesh
 urllib3
 vdms
 websockets
+django-debug-toolbar

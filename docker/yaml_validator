@@ -43,7 +43,7 @@ class YAMLValidator:
       print(
       "docker-compose.yml is missing the following image(s): "
       + ", ".join(sorted(diff))
-      + ". Please re-create the docker-compose.yml."
+      + ". Please re-create the docker-compose.yml file."
       )
       sys.exit(1)
 

@@ -91,7 +91,7 @@ scene_common:
 	ln -sf ../scene_common ../controller
 	ln -sf ../scene_common ../percebro
 	mkdir -p ../controller/utils && ln -sf ../../utils/waitforbroker ../controller/utils/waitforbroker
-	mkdir -p ../percebro/utils && ln -sf ../../utils/waitforbroker ../percebro/utils/waitforbroker
+	mkdir -p ../percebro/utils && cp ../utils/waitforbroker ../percebro/utils/waitforbroker
 
 # To force a complete clean build, do:
 #   make rebuild

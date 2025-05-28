@@ -17,7 +17,6 @@ openvino==2024.6.0
 ovmsclient
 paho-mqtt
 pillow
-pybind11
 pyrealsense2
 pytest
 pyyaml

@@ -255,7 +255,11 @@ COPY --from=build /tmp/scene_common_wheel/ /tmp/scene_common_wheel/
 RUN pip3 install --no-cache-dir /tmp/scene_common_wheel/*.whl && rm -rf /tmp/scene_common_wheel
 
 # Add percebro
-ADD percebro.tar $SCENESCAPE_HOME/percebro
+COPY src/* $SCENESCAPE_HOME/percebro/
+COPY utils/waitforbroker $SCENESCAPE_HOME/percebro/utils/
+COPY model-config.json $SCENESCAPE_HOME/percebro/
+# Set correct permisions
+RUN chown -R $WSUSER:$WSUSER $SCENESCAPE_HOME/percebro/ && chmod +x $SCENESCAPE_HOME/percebro/percebro
 
 # Copy init scripts
 COPY percebro-init /usr/local/bin/

@@ -10,12 +10,10 @@
 # or implied warranties, other than those that are expressly stated in the License.
 
 IMAGE=scenescape-percebro
-VERSION:=$(shell cat ../version.txt)
+VERSION:=$(shell cat version.txt)
 FORCE_VAAPI ?= 0
 
--include Makefile.percebrofiles
-
-default: Makefile.percebrofiles percebro.tar scene_common.tar \
+default: scene_common.tar \
 	Dockerfile cJSON.bundle open_model_zoo.bundle
 	env BUILDKIT_PROGRESS=plain \
 	  docker build $(REBUILDFLAGS) \
@@ -27,10 +25,6 @@ default: Makefile.percebrofiles percebro.tar scene_common.tar \
 	    --build-arg FORCE_VAAPI=$(FORCE_VAAPI) \
 	    --rm -t $(IMAGE):$(VERSION) . \
 	&& docker tag $(IMAGE):$(VERSION) $(IMAGE):latest
-
-FPPERCEBRO = $(addprefix ../,$(PERCEBROFILES))
-percebro.tar: Makefile.percebrofiles $(FPPERCEBRO)
-	tar -chf $@ -C .. $(PERCEBROFILES)
 
 scene_common.tar:
 	tar -chf $@ ../scene_common

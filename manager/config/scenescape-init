@@ -207,8 +207,8 @@ if [ ! -e ${RUNSECRETS} -a -n "${SECRETSDIR}" -a -d "${SECRETSDIR}" ] ; then
     ln -s ${SECRETSDIR} ${RUNSECRETS}
 fi
 if [ -e ${RUNSECRETS}/django/secrets.py ] ; then
-    rm -f ${MANAGERDIR}/manager/secrets.py
-    ln -s ${RUNSECRETS}/django/secrets.py ${MANAGERDIR}/manager/secrets.py
+    cp ${RUNSECRETS}/django/secrets.py ${MANAGERDIR}/manager/secrets.py
+    chown -R $WSUID:$WSGID ${MANAGERDIR}/manager/secrets.py
 fi
 if [ -e ${MANAGERDIR}/manager/secrets.py ] ; then
     DBPASS=$(sed -r -n -e "/DATABASE_PASSWORD=/s/.*'([^']+)'/\1/p" \

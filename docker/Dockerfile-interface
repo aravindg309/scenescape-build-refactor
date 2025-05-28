@@ -27,7 +27,6 @@ RUN : \
     ; apt-get install -y --no-install-recommends \
         wget \
         curl \
-        g++ \
         libglib2.0-0 \
         libgl1-mesa-glx \
         libgtest-dev \
@@ -59,13 +58,6 @@ RUN : \
     ; pip3 install --no-cache-dir -r /tmp/requirements-interface.txt \
     ; rm -rf /tmp/requirements-interface.txt \
     ;
-
-COPY ./scene_common tmp/scene_common
-RUN cd tmp/scene_common \
-    && pip install --no-cache-dir . \
-    && make -C fast_geometry -j $(nproc) all install \
-    && cd .. \
-    && rm -rf scene_common
 
 # Gecko Driver
 ADD ./docker/geckodriver.tar.gz /usr/local/bin/

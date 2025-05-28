@@ -42,8 +42,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         python3-pip \
         python3-scipy \
     && pip3 install --upgrade --no-cache-dir \
-        --extra-index-url https://download.pytorch.org/whl/cpu \
-        -r /tmp/requirements-buildtime.txt
+        --extra-index-url https://download.pytorch.org/whl/cpu
 
 ENV WSUSER=scenescape
 COPY ./scene_common tmp/scene_common
@@ -52,7 +51,6 @@ RUN cd tmp/scene_common \
     && make -C fast_geometry -j $(nproc) all install \
     && cd .. \
     && rm -rf scene_common
-
 
 FROM ubuntu:22.04
 USER root
@@ -122,8 +120,6 @@ RUN cat > /etc/apache2/mods-available/qos.conf <<EOF
    QS_SrvMinDataRate 150 1200
 </IfModule>
 EOF
-
-ENV SCENESCAPE_HOME=/home/$WSUSER/SceneScape
 
 # Suppress warning about consecutive RUN instructions here
 # hadolint ignore=DL3059

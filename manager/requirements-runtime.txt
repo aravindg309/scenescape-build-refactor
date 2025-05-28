@@ -1,6 +1,7 @@
 # Keep package list in alphabetical order
 django
 django-axes
+django-debug-toolbar
 django-session-timeout
 djangorestframework
 jsonschema
@@ -17,4 +18,3 @@ trimesh
 urllib3
 vdms
 websockets
-django-debug-toolbar

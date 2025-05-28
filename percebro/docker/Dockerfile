@@ -33,7 +33,7 @@ RUN : \
     ; chmod a+rX "${WSHOME}" \
     ;
 
-# Install build and runtime dependencies
+# Install build dependencies
 COPY requirements-percebro.txt /tmp
 RUN apt-get update && apt-get install -y --no-install-recommends \
         cmake \
@@ -165,8 +165,7 @@ RUN : \
     ; cp dist/opencv_python-${CV_VERSION}-py3-none-any.whl /tmp/ \
     ; cd ; rm -rf ${TMP}
 
-# Prepare percebro and scene_common for install in runtime
-ADD percebro.tar $SCENESCAPE_HOME/percebro
+# Prepare scene_common for install in runtime
 ADD scene_common.tar /tmp/
 
 # Build and install scene_common (wheel and fast_geometry)
@@ -197,7 +196,7 @@ RUN : \
     ; eval WSHOME=~$WSUSER \
     ; chmod a+rX "${WSHOME}" \
     ;
-
+COPY requirements-percebro.txt /tmp
 # Install runtime dependencies only
 RUN apt-get update && apt-get install -y --no-install-recommends \
         curl \
@@ -233,7 +232,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libxcb-dri3-dev \
         libxfixes-dev \
         libxext-dev \
-    && rm -rf /var/lib/apt/lists/*
+    && pip3 install --upgrade --no-cache-dir \
+        --extra-index-url https://download.pytorch.org/whl/cpu \
+        -r /tmp/requirements-percebro.txt && \
+    pip3 uninstall -y openvino-telemetry && \
+    rm -rf /tmp/requirements-percebro.txt && \
+    rm -rf /var/lib/apt/lists/*
 
 # # Copy OpenVINO GPU libva gmmlib media-driver drivers from build stage
 COPY --from=build /usr/lib/x86_64-linux-gnu/ /usr/lib/x86_64-linux-gnu/
@@ -250,8 +254,8 @@ RUN pip3 install --no-cache-dir /tmp/opencv_python-*-py3-none-any.whl && rm /tmp
 COPY --from=build /tmp/scene_common_wheel/ /tmp/scene_common_wheel/
 RUN pip3 install --no-cache-dir /tmp/scene_common_wheel/*.whl && rm -rf /tmp/scene_common_wheel
 
-# Copy percebro
-COPY --from=build /home/scenescape/SceneScape/percebro $SCENESCAPE_HOME/percebro
+# Add percebro
+ADD percebro.tar $SCENESCAPE_HOME/percebro
 
 # Copy init scripts
 COPY percebro-init /usr/local/bin/

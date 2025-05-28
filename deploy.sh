@@ -225,7 +225,7 @@ make -C docker
 make -C manager
 make -C docker DBPASS="${DBPASS}"
 make -C autocalibration/docker &
-make -C controller/docker &
+make -C controller &
 make -C percebro/docker &
 wait
 

@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.whl
+*.tar
+*.zip
+*.egg-info/
+build/
+.git/
+venv/
+tmp/

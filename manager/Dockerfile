@@ -42,7 +42,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         python3-pip \
         python3-scipy \
     && pip3 install --upgrade --no-cache-dir \
-        --extra-index-url https://download.pytorch.org/whl/cpu
+        --extra-index-url https://download.pytorch.org/whl/cpu \
+        -r /tmp/requirements-buildtime.txt
 
 ENV WSUSER=scenescape
 COPY ./scene_common tmp/scene_common

@@ -1,8 +1,7 @@
 services:
   test:
     image: scenescape-percebro
-    #command: tests/perf_tests/scripts/inference_perf_test.sh
-    command: tail -f /dev/null
+    command: tests/perf_tests/scripts/inference_perf_test.sh
     privileged: true
     volumes:
      - ./:/workspace

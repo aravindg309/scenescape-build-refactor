@@ -27,12 +27,19 @@ RUN : \
     ; apt-get install -y --no-install-recommends \
         wget \
         curl \
-        libpci-dev \
-        libnss3-tools \
-        python3 \
+        g++ \
+        libglib2.0-0 \
+        libgl1-mesa-glx \
+        libgtest-dev \
+        make \
+        patch \
+        pybind11-dev \
+        python-is-python3 \
+        python3-dev \
         python3-pip \
-        software-properties-common \
+        python3-scipy \
         sudo \
+        software-properties-common \
         unzip \
         xserver-xephyr \
         xvfb \
@@ -47,23 +54,21 @@ Pin-Priority: 1000 \n\
     ; rm -rf /var/lib/apt/lists/*
 
 # Python modules
-COPY requirements-interface.txt /tmp
+COPY ./docker/requirements-interface.txt /tmp
 RUN : \
     ; pip3 install --no-cache-dir -r /tmp/requirements-interface.txt \
     ; rm -rf /tmp/requirements-interface.txt \
     ;
 
-# Install only scene common python module
-ADD scene_common.tar tmp/
-RUN : \
-    ; cd tmp/scene_common \
-    ; pip install --no-cache-dir . \
-    ; cd .. \
-    ; rm -rf scene_common \
-    ;
+COPY ./scene_common tmp/scene_common
+RUN cd tmp/scene_common \
+    && pip install --no-cache-dir . \
+    && make -C fast_geometry -j $(nproc) all install \
+    && cd .. \
+    && rm -rf scene_common
 
 # Gecko Driver
-ADD geckodriver.tar.gz /usr/local/bin/
+ADD ./docker/geckodriver.tar.gz /usr/local/bin/
 
 ENV WSUSER selenium
 RUN : \
@@ -71,12 +76,12 @@ RUN : \
     ;
 
 # Be sure to update this line if the user or home directory changes
-ADD firefox-profile.tar /home/selenium/.mozilla/
+COPY ./docker/firefox-profile.tar /home/selenium/.mozilla/
 
 RUN : \
     ; eval WSHOME=~$WSUSER \
     ; chown -R "$WSUSER.$WSUSER" "$WSHOME/.mozilla" \
     ;
 
-COPY sel-init /usr/local/bin/
+COPY ./docker/sel-init /usr/local/bin/
 ENTRYPOINT ["/usr/local/bin/sel-init"]

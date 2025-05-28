@@ -18,14 +18,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     -r /tmp/requirements-buildtime.txt
 
 # === AprilTag Build and Wheel ===
-RUN mkdir -p /output && mkdir -p /tmp/apriltag_build && \
-    mkdir -p /tmp/apriltag && cd /tmp/apriltag && \
-    git clone https://github.com/duckietown/lib-dt-apriltags.git apriltag-dev && \
-    cd apriltag-dev && git submodule update --init && \
+RUN mkdir -p /output /tmp/apriltag_build /tmp/apriltag && \
+    git clone https://github.com/duckietown/lib-dt-apriltags.git /tmp/apriltag/apriltag-dev && \
+    cd /tmp/apriltag/apriltag-dev && git submodule update --init && \
     mkdir build && cd build && cmake ../apriltags/ && make -j$(nproc) && \
     cd .. && python3 setup.py bdist_wheel && \
-    cp build/*.so /tmp/apriltag_build/ && \
-    cp dist/*.whl /output/
+    cp build/*.so /tmp/apriltag_build/ && cp dist/*.whl /output/
 
 # === NetVLAD Weights Build and Wheel ===
 RUN mkdir -p /tmp/netvlad/third_party/netvlad && cd /tmp/netvlad && \
@@ -50,9 +48,6 @@ RUN cd /tmp/scene_common && \
     make -C fast_geometry -j$(nproc) all install && \
     cp -r /tmp/scene_common /output/scene_common
 
-# Clean unnecessary build deps
-RUN apt-get purge -y --auto-remove make g++ && apt-get clean
-
 # =========================
 # STAGE 2: RUNTIME STAGE
 # =========================
@@ -68,8 +63,7 @@ ENV SCENESCAPE_HOME=/home/$WSUSER/SceneScape
 # Install runtime dependencies
 COPY autocalibration/requirements-runtime.txt /tmp/
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential cmake make g++ python3-dev python3-pip python-is-python3 \
-    pybind11-dev libeigen3-dev libgtest-dev curl git && \
+    python3 python3-pip && \
     rm -rf /var/lib/apt/lists/* && \
     pip3 install --upgrade --no-cache-dir \
     --extra-index-url https://download.pytorch.org/whl/cpu \
@@ -91,7 +85,7 @@ COPY --from=builder /tmp/apriltag_build/*.so /usr/local/lib/python3.10/dist-pack
 # Copy scene_common
 COPY --from=builder /output/scene_common /opt/scene_common
 
-# Copy application code
+# Copy auto calibration sources
 COPY autocalibration/src/camcalibration $SCENESCAPE_HOME/camcalibration/
 COPY autocalibration/src/*.py $SCENESCAPE_HOME/
 COPY autocalibration/src/camcalibration-init /usr/local/bin/

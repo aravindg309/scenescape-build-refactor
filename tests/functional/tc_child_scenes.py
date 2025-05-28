@@ -22,7 +22,7 @@ from scene_common.mqtt import PubSub
 from scene_common import log
 from scene_common.transform import CameraPose
 from scene_common.geometry import Point
-import tools.analytics.library.metrics as metrics
+from controller.tools.analytics.library import metrics
 from scene_common.timestamp import get_iso_time
 import tests.common_test_utils as common
 

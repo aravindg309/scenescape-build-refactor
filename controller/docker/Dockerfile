@@ -94,8 +94,6 @@ RUN : \
     ; pip3 install --no-cache-dir "$SCENESCAPE_HOME/" \
     ;
 
-RUN cp -r $SCENESCAPE_HOME/tools /usr/local/lib/python3.10/dist-packages/
-
 RUN : \
     ; apt-get purge -y --auto-remove make cmake git \
     ; apt-get clean \

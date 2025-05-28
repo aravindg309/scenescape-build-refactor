@@ -278,7 +278,7 @@ echo '########################################'
 echo Testing inference performance
 echo '########################################'
 
-# REQUIRED_FPS=${REQUIRED_FPS:-20} # Total, not per camera
+REQUIRED_FPS=${REQUIRED_FPS:-20} # Total, not per camera
 if ! tests/perf_tests/tc_inference_performance.sh retail \
      "sample_data/apriltag-cam1.mp4 sample_data/apriltag-cam2.mp4" 500 \
      $REQUIRED_FPS ; then

@@ -34,7 +34,7 @@ RUN : \
     ;
 
 # Install build dependencies
-COPY requirements-percebro.txt /tmp
+COPY requirements-buildtime.txt /tmp
 RUN apt-get update && apt-get install -y --no-install-recommends \
         cmake \
         curl \
@@ -76,9 +76,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         v4l-utils  \
     && pip3 install --upgrade --no-cache-dir \
         --extra-index-url https://download.pytorch.org/whl/cpu \
-        -r /tmp/requirements-percebro.txt && \
+        -r /tmp/requirements-buildtime.txt && \
     pip3 uninstall -y openvino-telemetry && \
-    rm -rf /tmp/requirements-percebro.txt && \
+    rm -rf /tmp/requirements-buildtime.txt && \
     rm -rf /var/lib/apt/lists/*
 
 # Install openvino GPU drivers

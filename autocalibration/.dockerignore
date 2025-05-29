@@ -6,7 +6,3 @@ __pycache__/
 *.tar
 *.zip
 *.egg-info/
-build/
-.git/
-venv/
-tmp/

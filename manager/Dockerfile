@@ -11,22 +11,20 @@
 # This software and the related documents are provided as is, with no express
 # or implied warranties, other than those that are expressly stated in the License.
 
-FROM ubuntu:22.04 AS builder
+FROM ubuntu:22.04 AS manager-builder
 
 # We use root for runtime init. The command in ENTRYPOINT will drop to an unprivileged user.
 # hadolint ignore=DL3002
 USER root
-
-SHELL ["/bin/bash", "-e", "-o", "pipefail", "-c"]
-ARG CERTDOMAIN=scenescape.intel.com
-
 ENV DEBIAN_FRONTEND=noninteractive
+SHELL ["/bin/bash", "-e", "-o", "pipefail", "-c"]
 
 # SceneScape requirements
 COPY ./manager/requirements-buildtime.txt /tmp
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        bzip2 \
+RUN : \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
         curl \
         g++ \
         libboost-python-dev \
@@ -42,7 +40,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         python3-pip \
         python3-scipy \
     && pip3 install --upgrade --no-cache-dir \
-        --extra-index-url https://download.pytorch.org/whl/cpu \
         -r /tmp/requirements-buildtime.txt
 
 ENV WSUSER=scenescape
@@ -53,7 +50,10 @@ RUN cd tmp/scene_common \
     && cd .. \
     && rm -rf scene_common
 
-FROM ubuntu:22.04
+
+# ---------- Manager Runtime Stage ------------------
+FROM ubuntu:22.04 AS manager-runtime
+
 USER root
 SHELL ["/bin/bash", "-e", "-o", "pipefail", "-c"]
 ARG USER_ID
@@ -66,7 +66,9 @@ ARG FORCE_VAAPI
 COPY ./manager/requirements-runtime.txt /tmp
 
 # Runtime dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN : \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
         apache2 \
         bindfs \
         bzip2 \
@@ -147,8 +149,8 @@ COPY ./manager/static/ $SCENESCAPE_HOME/manager/static
 COPY ./manager/templatetags/ $SCENESCAPE_HOME/manager/templatetags
 COPY ./manager/version.txt $SCENESCAPE_HOME/manager/
 COPY ./manager/manage.py $SCENESCAPE_HOME
-COPY --from=builder /usr/local/lib/python3.10/dist-packages/fast_geometry /usr/local/lib/python3.10/dist-packages/fast_geometry
-COPY --from=builder /usr/local/lib/python3.10/dist-packages/scene_common /usr/local/lib/python3.10/dist-packages/scene_common
+COPY --from=manager-builder /usr/local/lib/python3.10/dist-packages/fast_geometry /usr/local/lib/python3.10/dist-packages/fast_geometry
+COPY --from=manager-builder /usr/local/lib/python3.10/dist-packages/scene_common /usr/local/lib/python3.10/dist-packages/scene_common
 
 # Install SceneScape
 RUN : \

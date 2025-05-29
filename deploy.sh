@@ -221,8 +221,8 @@ echo '########################################'
 
 make -C docs clean
 make -C certificates CERTPASS="${CERTPASS}"
-make -C manager &
-make -C docker DBPASS="${DBPASS}" &
+make -C docker DBPASS="${DBPASS}"
+make -C manager
 make -C autocalibration/docker &
 make -C controller &
 make -C percebro/docker &

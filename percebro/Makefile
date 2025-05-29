@@ -13,8 +13,7 @@ IMAGE=scenescape-percebro
 VERSION:=$(shell cat version.txt)
 FORCE_VAAPI ?= 0
 
-default: scene_common.tar \
-	Dockerfile cJSON.bundle open_model_zoo.bundle
+default: Dockerfile cJSON.bundle open_model_zoo.bundle
 	env BUILDKIT_PROGRESS=plain \
 	  docker build $(REBUILDFLAGS) \
 	    --build-arg http_proxy=$(http_proxy) \
@@ -23,11 +22,9 @@ default: scene_common.tar \
 	    --build-arg CERTDOMAIN=$(CERTDOMAIN) \
 	    --build-arg USER_ID=$$UID \
 	    --build-arg FORCE_VAAPI=$(FORCE_VAAPI) \
-	    --rm -t $(IMAGE):$(VERSION) . \
+	    --rm -t $(IMAGE):$(VERSION) .. -f ./Dockerfile \
 	&& docker tag $(IMAGE):$(VERSION) $(IMAGE):latest
 
-scene_common.tar:
-	tar -chf $@ ../scene_common
 
 cJSON.bundle:
 	URL=https://github.com/DaveGamble && PKG=$(basename $@) && CURDIR=$${PWD} && TMP=/tmp/sscape.$$$$ && mkdir $${TMP} && cd $${TMP} && git clone $${URL}/$${PKG}.git && cd $${PKG} && git bundle create ../$${PKG}.bundle --all && cd $${CURDIR} && mv $${TMP}/$${PKG}.bundle . && rm -rf $${TMP}

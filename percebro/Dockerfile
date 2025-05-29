@@ -34,7 +34,7 @@ RUN : \
     ;
 
 # Install build dependencies
-COPY requirements-buildtime.txt /tmp
+COPY ./percebro/requirements-buildtime.txt /tmp
 RUN apt-get update && apt-get install -y --no-install-recommends \
         cmake \
         curl \
@@ -107,11 +107,49 @@ RUN : \
     ; ldconfig \
     ;
 
-COPY install-vaapi.sh /tmp
-RUN : \
-    ; /tmp/install-vaapi.sh \
-    ; rm /tmp/install-vaapi.sh \
-    ;
+# COPY ./percebro/install-vaapi.sh /tmp
+# RUN : \
+#     ; /tmp/install-vaapi.sh \
+#     ; rm /tmp/install-vaapi.sh \
+#     ;
+
+RUN if [ "${FORCE_VAAPI}" != "1" ]; then \
+        apt-get update && apt-get install -y pciutils; \
+        HAS_CARD=$(lspci | grep VGA | grep Intel); \
+        if [ -z "${HAS_CARD}" ]; then \
+            echo "No Intel GPU detected .."; \
+            exit 0; \
+        fi; \
+        echo "Intel GPU detected."; \
+    else \
+        echo "Forcing VAAPI build."; \
+    fi; \
+    echo "Setting up video decoding using VAAPI subsystem.."; \
+    set -e; \
+    RUNTIME_DEPS='intel-gpu-tools libdrm-dev libx11-xcb-dev libxcb-dri3-dev libxfixes-dev libxext-dev'; \
+    BUILD_DEPS='autoconf automake autotools-dev bison flex libgnutls28-dev libtool nasm ninja-build'; \
+    WDIR=/tmp; \
+    TARGET_PREFIX=/usr; \
+    TARGET_LIBDIR=${TARGET_PREFIX}/lib/x86_64-linux-gnu; \
+    TARGET_INCDIR=${TARGET_PREFIX}/include/x86_64-linux-gnu; \
+    apt-get update && apt-get install -y --no-install-recommends $BUILD_DEPS $RUNTIME_DEPS; \
+    cd ${WDIR}; \
+    git clone https://github.com/intel/libva.git && cd libva; \
+    ./autogen.sh --prefix=${TARGET_PREFIX} --libdir=${TARGET_LIBDIR} --enable-x11; \
+    make && make install; \
+    cd ${WDIR}; \
+    git clone https://github.com/intel/gmmlib.git && cd gmmlib; \
+    mkdir build && cd build; \
+    cmake -DCMAKE_BUILD_TYPE=Release -DARCH=64 ..; \
+    make -j"$(nproc)" && make install; \
+    cd ${WDIR}; \
+    git clone https://github.com/intel/media-driver.git; \
+    mkdir build_media && cd build_media; \
+    cmake ../media-driver; \
+    make -j"$(nproc)" && make install; \
+    cd ${WDIR} && rm -rf libva gmmlib media-driver build_media; \
+    apt-get purge -y $BUILD_DEPS pciutils; \
+    rm -rf /var/lib/apt/lists/*
 
 # Build opencv from source and install wheel
 RUN : \
@@ -166,7 +204,7 @@ RUN : \
     ; cd ; rm -rf ${TMP}
 
 # Prepare scene_common for install in runtime
-ADD scene_common.tar /tmp/
+COPY ./scene_common tmp/scene_common
 
 # Build and install scene_common (wheel and fast_geometry)
 RUN : \
@@ -177,6 +215,7 @@ RUN : \
 
 # -------- Runtime Stage --------
 FROM ubuntu:22.04 AS runtime
+
 
 SHELL ["/bin/bash", "-e", "-o", "pipefail", "-c"]
 
@@ -196,10 +235,9 @@ RUN : \
     ; eval WSHOME=~$WSUSER \
     ; chmod a+rX "${WSHOME}" \
     ;
-COPY requirements-percebro.txt /tmp
+COPY ./percebro/requirements-percebro.txt /tmp
 # Install runtime dependencies only
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        curl \
         ffmpeg \
         gstreamer1.0-libav \
         gstreamer1.0-plugins-bad \
@@ -220,7 +258,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         netbase \
         python-is-python3 \
         python3-pip \
-        # python3-opencv \
         python3-scipy \
         python3-termcolor \
         sudo \
@@ -255,13 +292,13 @@ COPY --from=build /tmp/scene_common_wheel/ /tmp/scene_common_wheel/
 RUN pip3 install --no-cache-dir /tmp/scene_common_wheel/*.whl && rm -rf /tmp/scene_common_wheel
 
 # Add percebro
-COPY src/* $SCENESCAPE_HOME/percebro/
-COPY utils/waitforbroker $SCENESCAPE_HOME/percebro/utils/
-COPY model-config.json $SCENESCAPE_HOME/percebro/
+COPY ./percebro/src/* $SCENESCAPE_HOME/percebro/
+COPY ./utils/waitforbroker $SCENESCAPE_HOME/percebro/utils/
+COPY ./percebro/config/model-config.json $SCENESCAPE_HOME/percebro/
 # Set correct permisions
 RUN chown -R $WSUSER:$WSUSER $SCENESCAPE_HOME/percebro/ && chmod +x $SCENESCAPE_HOME/percebro/percebro
 
 # Copy init scripts
-COPY percebro-init /usr/local/bin/
+COPY ./percebro/src/percebro-init /usr/local/bin/
 
 ENTRYPOINT ["/usr/local/bin/percebro-init"]

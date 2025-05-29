@@ -84,8 +84,7 @@ COPY --from=builder /tmp/apriltag_build/*.so /usr/local/lib/python3.10/dist-pack
 
 # Copy scene_common
 COPY --from=builder /output/scene_common /opt/scene_common
-ENV PYTHONPATH=""
-ENV PYTHONPATH="/opt/scene_common/src:/opt/scene_common/fast_geometry:${PYTHONPATH}"
+ENV PYTHONPATH="/opt/scene_common/src:/opt/scene_common/fast_geometry"
 
 # Copy auto calibration sources
 COPY autocalibration/src/camcalibration $SCENESCAPE_HOME/

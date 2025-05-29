@@ -19,9 +19,6 @@ USER root
 ENV DEBIAN_FRONTEND=noninteractive
 SHELL ["/bin/bash", "-e", "-o", "pipefail", "-c"]
 
-# SceneScape requirements
-COPY ./manager/requirements-buildtime.txt /tmp
-
 RUN : \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -39,7 +36,11 @@ RUN : \
         python3-dev \
         python3-pip \
         python3-scipy \
-    && pip3 install --upgrade --no-cache-dir \
+    && rm -rf /var/lib/apt/lists/*
+
+# SceneScape requirements
+COPY ./manager/requirements-buildtime.txt /tmp
+RUN pip3 install --upgrade --no-cache-dir \
         -r /tmp/requirements-buildtime.txt
 
 ENV WSUSER=scenescape
@@ -63,9 +64,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV WSUSER=scenescape
 ENV SCENESCAPE_HOME=/home/$WSUSER/SceneScape
 ARG FORCE_VAAPI
-COPY ./manager/requirements-runtime.txt /tmp
 
-# Runtime dependencies
 RUN : \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -85,7 +84,11 @@ RUN : \
         python3-pip \
         python3-scipy \
         sudo \
-    && pip3 install --upgrade --no-cache-dir \
+    && rm -rf /var/lib/apt/lists/*
+
+# Runtime dependencies
+COPY ./manager/requirements-runtime.txt /tmp
+RUN pip3 install --upgrade --no-cache-dir \
         --extra-index-url https://download.pytorch.org/whl/cpu \
         -r /tmp/requirements-runtime.txt
 
@@ -141,13 +144,13 @@ RUN : \
 # End of TLS installation
 
 RUN mkdir -p $SCENESCAPE_HOME/manager
-COPY ./manager/setup.py $SCENESCAPE_HOME/manager/
-COPY ./manager/django/* $SCENESCAPE_HOME/manager/
+COPY ./manager/django/* \
+     ./manager/setup.py \
+     ./manager/version.txt $SCENESCAPE_HOME/manager/
 COPY ./manager/management/ $SCENESCAPE_HOME/manager/management
 COPY ./manager/templates/ $SCENESCAPE_HOME/manager/templates
 COPY ./manager/static/ $SCENESCAPE_HOME/manager/static
 COPY ./manager/templatetags/ $SCENESCAPE_HOME/manager/templatetags
-COPY ./manager/version.txt $SCENESCAPE_HOME/manager/
 COPY ./manager/manage.py $SCENESCAPE_HOME
 COPY --from=manager-builder /usr/local/lib/python3.10/dist-packages/fast_geometry /usr/local/lib/python3.10/dist-packages/fast_geometry
 COPY --from=manager-builder /usr/local/lib/python3.10/dist-packages/scene_common /usr/local/lib/python3.10/dist-packages/scene_common

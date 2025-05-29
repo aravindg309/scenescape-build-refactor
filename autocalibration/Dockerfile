@@ -63,7 +63,7 @@ ENV SCENESCAPE_HOME=/home/$WSUSER/SceneScape
 # Install runtime dependencies
 COPY autocalibration/requirements-runtime.txt /tmp/
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3 python3-pip && \
+    python3 python3-pip bindfs sudo libgl1 libglib2.0 libgomp1 && \
     rm -rf /var/lib/apt/lists/* && \
     pip3 install --upgrade --no-cache-dir \
     --extra-index-url https://download.pytorch.org/whl/cpu \
@@ -84,10 +84,13 @@ COPY --from=builder /tmp/apriltag_build/*.so /usr/local/lib/python3.10/dist-pack
 
 # Copy scene_common
 COPY --from=builder /output/scene_common /opt/scene_common
+ENV PYTHONPATH=""
+ENV PYTHONPATH="/opt/scene_common/src:/opt/scene_common/fast_geometry:${PYTHONPATH}"
 
 # Copy auto calibration sources
-COPY autocalibration/src/camcalibration $SCENESCAPE_HOME/camcalibration/
+COPY autocalibration/src/camcalibration $SCENESCAPE_HOME/
 COPY autocalibration/src/*.py $SCENESCAPE_HOME/
 COPY autocalibration/src/camcalibration-init /usr/local/bin/
+RUN chmod +x /usr/local/bin/camcalibration-init
 
 ENTRYPOINT ["/usr/local/bin/camcalibration-init"]

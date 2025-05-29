@@ -13,7 +13,7 @@
 
 set -e
 
-SCENESCAPE_IMAGE=scenescape
+SCENESCAPE_IMAGE=scenescape-manager
 DBDIR=db
 MIGRATIONSDIR=migrations
 SECRETSDIR=secrets

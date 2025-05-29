@@ -109,7 +109,7 @@ RUN : \
 
 RUN if [ "${FORCE_VAAPI}" != "1" ]; then \
         apt-get update && apt-get install -y pciutils; \
-        HAS_CARD=$(lspci | grep VGA | grep Intel); \
+        HAS_CARD=$(lspci | grep VGA | grep Intel || true); \
         if [ -z "${HAS_CARD}" ]; then \
             echo "No Intel GPU detected .."; \
             exit 0; \

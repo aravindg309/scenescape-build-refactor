@@ -107,12 +107,6 @@ RUN : \
     ; ldconfig \
     ;
 
-# COPY ./percebro/install-vaapi.sh /tmp
-# RUN : \
-#     ; /tmp/install-vaapi.sh \
-#     ; rm /tmp/install-vaapi.sh \
-#     ;
-
 RUN if [ "${FORCE_VAAPI}" != "1" ]; then \
         apt-get update && apt-get install -y pciutils; \
         HAS_CARD=$(lspci | grep VGA | grep Intel); \

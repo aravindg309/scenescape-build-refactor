@@ -235,7 +235,7 @@ RUN : \
     ; eval WSHOME=~$WSUSER \
     ; chmod a+rX "${WSHOME}" \
     ;
-COPY ./percebro/requirements-percebro.txt /tmp
+COPY ./percebro/requirements-runtime.txt /tmp
 # Install runtime dependencies only
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ffmpeg \
@@ -271,9 +271,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libxext-dev \
     && pip3 install --upgrade --no-cache-dir \
         --extra-index-url https://download.pytorch.org/whl/cpu \
-        -r /tmp/requirements-percebro.txt && \
+        -r /tmp/requirements-runtime.txt && \
     pip3 uninstall -y openvino-telemetry && \
-    rm -rf /tmp/requirements-percebro.txt && \
+    rm -rf /tmp/requirements-runtime.txt && \
     rm -rf /var/lib/apt/lists/*
 
 # # Copy OpenVINO GPU libva gmmlib media-driver drivers from build stage

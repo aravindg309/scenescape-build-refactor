@@ -89,6 +89,7 @@ ENV PYTHONPATH="/opt/scene_common/src:/opt/scene_common/fast_geometry:${PYTHONPA
 
 # Copy auto calibration sources
 COPY autocalibration/src/camcalibration $SCENESCAPE_HOME/
+RUN chmod +x $SCENESCAPE_HOME/camcalibration
 COPY autocalibration/src/*.py $SCENESCAPE_HOME/
 COPY autocalibration/src/camcalibration-init /usr/local/bin/
 RUN chmod +x /usr/local/bin/camcalibration-init

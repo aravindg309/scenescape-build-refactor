@@ -54,6 +54,7 @@ class YAMLValidator:
     self.currentImages = set()
     for key in self.yaml_json['services']:
       image = self.yaml_json['services'][key]['image']
+      image = image.split(':')[0]
       self.currentImages.add(image)
     difference = self.images - self.currentImages
     return difference

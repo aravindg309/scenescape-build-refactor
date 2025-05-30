@@ -20,9 +20,9 @@ db.sqlite3
 db-backup-*
 docker/.mosquitto-go-auth-build
 manager/build
-manager/static/assets
-manager/static/bootstrap*
-manager/static/examples
+manager/src/static/assets
+manager/src/static/bootstrap*
+manager/src/static/examples
 docker/geckodriver.tar.gz
 docker/jslibs
 docker/l_openvino*

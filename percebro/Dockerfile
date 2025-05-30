@@ -249,18 +249,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     rm -rf /var/lib/apt/lists/*
 
 # # Copy OpenVINO GPU libva gmmlib media-driver drivers from build stage
-COPY --from=build /usr/lib/x86_64-linux-gnu/ /usr/lib/x86_64-linux-gnu/
-COPY --from=build /usr/local/lib/ /usr/local/lib/
-COPY --from=build /etc/OpenCL/ /etc/OpenCL/
-COPY --from=build /etc/ld.so.conf.d/ /etc/ld.so.conf.d/
-COPY --from=build /usr/include/x86_64-linux-gnu/   /usr/include/x86_64-linux-gnu/
+COPY --from=percebro-builder /usr/lib/x86_64-linux-gnu/ /usr/lib/x86_64-linux-gnu/
+COPY --from=percebro-builder /usr/local/lib/ /usr/local/lib/
+COPY --from=percebro-builder /etc/OpenCL/ /etc/OpenCL/
+COPY --from=percebro-builder /etc/ld.so.conf.d/ /etc/ld.so.conf.d/
+COPY --from=percebro-builder /usr/include/x86_64-linux-gnu/   /usr/include/x86_64-linux-gnu/
 
 # Copy OpenCV wheel and install
-COPY --from=build /tmp/opencv_python-*-py3-none-any.whl /tmp/
+COPY --from=percebro-builder /tmp/opencv_python-*-py3-none-any.whl /tmp/
 RUN pip3 install --no-cache-dir /tmp/opencv_python-*-py3-none-any.whl && rm /tmp/opencv_python-*-py3-none-any.whl
 
 # Copy scene_common
-COPY --from=build /usr/local/lib/python3.10/dist-packages/scene_common /usr/local/lib/python3.10/dist-packages/scene_common
+COPY --from=percebro-builder /usr/local/lib/python3.10/dist-packages/scene_common /usr/local/lib/python3.10/dist-packages/scene_common
 
 # Add percebro
 COPY ./percebro/src/* $SCENESCAPE_HOME/percebro/

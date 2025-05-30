@@ -61,6 +61,6 @@ During testing, a scenario was discovered where a user with admin access to the 
 
 **Mitigation**: "Live View" is meant for explainability and debugging. Disable "Live View" when SceneScape is deployed in production environments.
 
-### 14. sscape folder is now renmaed to manager which may cause database upgrade issues for previous releases
+### 14. Upgrading database from previous release versions fails
 
-**Mitigation**: Recreate any scene that still references the sscape project
+**Mitigation**: Recreate the scene configuration in the new deployment

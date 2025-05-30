@@ -19,6 +19,8 @@ AUTHFILES=$(addprefix $(SECRETSDIR)/,$(shell echo $(MQTTUSERS) | sed -e 's/=[^ ]
 CURL_FLAGS=--connect-timeout 5 --max-time 120 --retry 5 --retry-delay 0
 FORCE_VAAPI ?= 0
 THREEJS_VERSION=168
+BUILD_DIR=./build
+IMAGES := scenescape-broker scenescape-model-installer
 
 default: broker model-installer-img install-models secrets
 
@@ -132,3 +134,15 @@ $(SECRETSDIR)/django/secrets.py:
 	done
 
 authfiles: $(AUTHFILES)
+
+.PHONY: list-deps
+list-deps:
+	@mkdir -p $(BUILD_DIR)
+	@for image in $(IMAGES); do \
+		if [ "$$image" != "scenescape-broker" ]; then \
+			docker run --rm --entrypoint pip $$image:$(VERSION) freeze --all > $(BUILD_DIR)/$$image-pip-deps.txt; \
+			echo "Python dependencies listed in $(BUILD_DIR)/$$image-pip-deps.txt"; \
+		fi; \
+		docker run --rm --entrypoint dpkg $$image:$(VERSION) -l | awk '$$1 == "ii" { print $$2, $$3, $$4 }' > $(BUILD_DIR)/$$image-apt-deps.txt; \
+		echo "OS dependencies listed in $(BUILD_DIR)/$$image-apt-deps.txt"; \
+	done

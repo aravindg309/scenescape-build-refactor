@@ -2,7 +2,7 @@
 
 IMAGE=scenescape-camcalibration
 BASE_OS_IMAGE=ubuntu:22.04
-VERSION:=$(shell cat ./version.txt)
+VERSION:=$(shell cat ../version.txt)
 BUILD_DIR=./build
 LOG_FILE=$(BUILD_DIR)/$(IMAGE).log
 SHELL := /bin/bash

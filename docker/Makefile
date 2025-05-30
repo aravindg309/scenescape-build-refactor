@@ -20,7 +20,9 @@ CURL_FLAGS=--connect-timeout 5 --max-time 120 --retry 5 --retry-delay 0
 FORCE_VAAPI ?= 0
 THREEJS_VERSION=168
 BUILD_DIR=./build
-IMAGES := scenescape-broker scenescape-model-installer
+IMAGES := $(IMAGE)-broker $(IMAGE)-model-installer
+BROKER_LOG_FILE=$(BUILD_DIR)/$(IMAGE)-broker.log
+MODEL_INSTALLER_LOG_FILE=$(BUILD_DIR)/$(IMAGE)-model-installer.log
 
 default: broker model-installer-img install-models secrets
 
@@ -34,22 +36,40 @@ interface: Dockerfile-interface firefox-profile.tar geckodriver.tar.gz
 	&& docker tag $(IMAGE)-interface:$(VERSION) $(IMAGE)-interface:latest
 
 broker: Dockerfile-broker
-	env BUILDKIT_PROGRESS=plain \
+	@echo "------- STARTING BUILD OF IMAGE: $(IMAGE)-broker:$(VERSION) -------"
+	@-env BUILDKIT_PROGRESS=plain \
 	  docker build $(REBUILDFLAGS) -f $< \
 	    --build-arg http_proxy=$(http_proxy) \
 	    --build-arg https_proxy=$(https_proxy) \
 	    --build-arg no_proxy=$(no_proxy) \
-	    --rm -t $(IMAGE)-broker:$(VERSION) .. -f ./Dockerfile-broker \
-	&& docker tag $(IMAGE)-broker:$(VERSION) $(IMAGE)-broker:latest
+	    --rm -t $(IMAGE)-broker:$(VERSION) .. -f ./Dockerfile-broker 2>&1 | tee $(BROKER_LOG_FILE); \
+	status=$${PIPESTATUS[0]}; \
+	if [ $$status -eq 0 ]; then \
+	    docker tag $(IMAGE)-broker:$(VERSION) $(IMAGE)-broker:latest; \
+	    echo -e "\033[0;32m------- BUILD OF IMAGE $(IMAGE)-broker:$(VERSION) COMPLETED SUCCESSFULLY -------\033[0m"; \
+	    echo "Log file created at $(BROKER_LOG_FILE)"; \
+	else \
+	    echo -e "\033[0;31m------- BUILD OF IMAGE $(IMAGE)-broker:$(VERSION) FAILED. CHECK $(BROKER_LOG_FILE) FOR DETAILS. -------\033[0m"; \
+	    exit 1; \
+	fi
 
 model-installer-img: Dockerfile-model-installer
-	env BUILDKIT_PROGRESS=plain \
+	@echo "------- STARTING BUILD OF IMAGE: $(IMAGE)-model-installer:$(VERSION) -------"
+	@-env BUILDKIT_PROGRESS=plain \
 	  docker build $(REBUILDFLAGS) -f $< \
 	    --build-arg http_proxy=$(http_proxy) \
 	    --build-arg https_proxy=$(https_proxy) \
 	    --build-arg no_proxy=$(no_proxy) \
-	    --rm -t $(IMAGE)-model-installer:$(VERSION) .. -f ./Dockerfile-model-installer \
-	  && docker tag $(IMAGE)-model-installer:$(VERSION) $(IMAGE)-model-installer:latest
+	    --rm -t $(IMAGE)-model-installer:$(VERSION) .. -f ./Dockerfile-model-installer 2>&1 | tee $(MODEL_INSTALLER_LOG_FILE); \
+	status=$${PIPESTATUS[0]}; \
+	if [ $$status -eq 0 ]; then \
+	    docker tag $(IMAGE)-model-installer:$(VERSION) $(IMAGE)-model-installer:latest; \
+	    echo -e "\033[0;32m------- BUILD OF IMAGE $(IMAGE)-model-installer:$(VERSION) COMPLETED SUCCESSFULLY -------\033[0m"; \
+	    echo "Log file created at $(MODEL_INSTALLER_LOG_FILE)"; \
+	else \
+	    echo -e "\033[0;31m------- BUILD OF IMAGE $(IMAGE)-model-installer:$(VERSION) FAILED. CHECK $(MODEL_INSTALLER_LOG_FILE) FOR DETAILS. -------\033[0m"; \
+	    exit 1; \
+	fi
 
 sources: Dockerfile-sources
 	env BUILDKIT_PROGRESS=plain \

@@ -12,7 +12,7 @@
 # or implied warranties, other than those that are expressly stated in the License.
 
 # -------- Build Stage --------
-FROM scenescape-common-base AS build
+FROM scenescape-common-base AS percebro-builder
 
 SHELL ["/bin/bash", "-e", "-o", "pipefail", "-c"]
 
@@ -186,7 +186,7 @@ RUN : \
     ; cd ; rm -rf ${TMP}
 
 # -------- Runtime Stage --------
-FROM ubuntu:22.04 AS runtime
+FROM ubuntu:22.04 AS percebro-runtime
 
 
 SHELL ["/bin/bash", "-e", "-o", "pipefail", "-c"]

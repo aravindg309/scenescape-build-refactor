@@ -9,7 +9,7 @@
 # This software and the related documents are provided as is, with no express
 # or implied warranties, other than those that are expressly stated in the License.
 
-IMAGE=scenescape-manager
+IMAGE=scenescape-percebro
 BASE_OS_IMAGE=ubuntu:22.04
 SHELL=/bin/bash
 VERSION:=$(shell cat version.txt)

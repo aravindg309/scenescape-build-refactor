@@ -1,7 +1,7 @@
 # =========================
 # STAGE 1: BUILD STAGE
 # =========================
-FROM scenescape-common-base AS builder
+FROM scenescape-common-base AS camcalibration-builder
 
 ENV DEBIAN_FRONTEND=noninteractive
 ARG CERTDOMAIN=scenescape.intel.com
@@ -42,7 +42,7 @@ RUN cd /tmp/reloc && python3 setup.py bdist_wheel && \
 # =========================
 # STAGE 2: RUNTIME STAGE
 # =========================
-FROM ubuntu:22.04
+FROM ubuntu:22.04 AS camcalibration-runtime
 
 ARG USER_ID
 ARG CERTDOMAIN=scenescape.intel.com

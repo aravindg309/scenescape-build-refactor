@@ -60,3 +60,7 @@ During testing, a scenario was discovered where a user with admin access to the 
 ### 13. Enabling "Live View" results in memory utilization monotonically increases over time
 
 **Mitigation**: "Live View" is meant for explainability and debugging. Disable "Live View" when SceneScape is deployed in production environments.
+
+### 14. sscape folder is now renmaed to manager which may cause database upgrade issues for previous releases
+
+**Mitigation**: Recreate any scene that still references the sscape project
